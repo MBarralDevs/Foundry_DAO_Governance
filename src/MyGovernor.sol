@@ -12,6 +12,8 @@ import {GovernorVotesQuorumFraction} from
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
 
+//MyGovernor contract from Openzeppelin wizard
+
 contract MyGovernor is
     Governor,
     GovernorSettings,
