@@ -11,10 +11,10 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 //Governor token from Openzeppelin wizard
 
-contract GovToken is ERC20, ERC20Burnable, Ownable, ERC20Permit, ERC20Votes {
-    constructor(address initialOwner) ERC20("GovToken", "MTK") Ownable(initialOwner) ERC20Permit("GovToken") {}
+contract GovToken is ERC20, ERC20Burnable, ERC20Permit, ERC20Votes {
+    constructor() ERC20("GovToken", "MTK") ERC20Permit("GovToken") {}
 
-    function mint(address to, uint256 amount) public onlyOwner {
+    function mint(address to, uint256 amount) public {
         _mint(to, amount);
     }
 

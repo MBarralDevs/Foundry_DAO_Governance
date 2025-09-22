@@ -19,7 +19,7 @@ contract MyGovernorTest is Test {
 
     function setUp() public {
         //We need the govToken and TimeLock to deploy the governor
-        govToken = new GovToken(USER);
+        govToken = new GovToken();
         govToken.mint(USER, USER_STARTING_BALANCE);
 
         vm.prank(USER);
