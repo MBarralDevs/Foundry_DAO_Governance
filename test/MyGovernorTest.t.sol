@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console2} from "forge-std/Test.sol";
 import {MyGovernor} from "../src/MyGovernor.sol";
 import {GovToken} from "../src/GovToken.sol";
 import {TimeLock} from "../src/TimeLock.sol";
@@ -13,9 +13,15 @@ contract MyGovernorTest is Test {
     TimeLock timeLock;
     Box box;
 
+    uint256[] values;
+    address[] targets;
+    bytes[] calldatas;
+
     address public USER = makeAddr("user");
     uint256 public constant USER_STARTING_BALANCE = 100 ether;
     uint256 public constant MIN_DELAY = 3600; // 1 hour, no one can execute the passed proposal until 1 hour after
+    uint256 public constant VOTING_DELAY = 1; // 1 block until proposal vote starts
+    uint256 public constant VOTING_PERIOD = 50400; //How long voting last
 
     function setUp() public {
         //We need the govToken and TimeLock to deploy the governor
@@ -45,5 +51,31 @@ contract MyGovernorTest is Test {
     function testCantUpdateBoxWithoutGovernance() public {
         vm.expectRevert();
         box.store(1);
+    }
+
+    function testGovernanceUpdateBox() public {
+        //Our goal is to call propose on the governor contract to call store(85) on the box contract
+        uint256 valueToStore = 85;
+        string memory description = "Store 85 in the Box";
+        bytes memory callData = abi.encodeWithSelector(Box.store.selector, valueToStore);
+
+        values.push(0);
+        calldatas.push(callData);
+        targets.push(address(box));
+
+        //1. Propose to the DAO
+        uint256 proposalId = governor.propose(targets, values, calldatas, description);
+
+        //checking we are in pending state
+        console2.log("Proposal State:", uint256(governor.state(proposalId))); //Pending, 0
+        assertEq(uint256(governor.state(proposalId)), 0);
+
+        //2. Move blocks forward to the voting delay
+        vm.warp(block.timestamp + VOTING_DELAY + 1);
+        vm.roll(block.number + VOTING_DELAY + 1);
+
+        //checking we are in active state
+        console2.log("Proposal State:", uint256(governor.state(proposalId))); //Active 1
+        assertEq(uint256(governor.state(proposalId)), 1);
     }
 }
