@@ -92,5 +92,26 @@ contract MyGovernorTest is Test {
         //checking we are in succeeded state
         console2.log("Proposal State:", uint256(governor.state(proposalId))); //Succeeded, 4
         assertEq(uint256(governor.state(proposalId)), 4);
+
+        //3. Queue the transaction
+        bytes32 descriptionHash = keccak256(abi.encodePacked(description));
+        governor.queue(targets, values, calldatas, descriptionHash);
+
+        vm.roll(block.number + MIN_DELAY + 1);
+        vm.warp(block.timestamp + MIN_DELAY + 1);
+
+        //checking we are in queued state
+        console2.log("Proposal State:", uint256(governor.state(proposalId))); //Queued, 5
+        assertEq(uint256(governor.state(proposalId)), 5);
+
+        // 4. Execute
+        governor.execute(targets, values, calldatas, descriptionHash);
+
+        //checking we are in executed state
+        console2.log("Proposal State:", uint256(governor.state(proposalId))); //Executed, 7
+        assertEq(uint256(governor.state(proposalId)), 7);
+
+        //Check the box value was updated
+        assert(box.retrieve() == valueToStore);
     }
 }
