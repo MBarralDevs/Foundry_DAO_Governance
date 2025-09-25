@@ -70,12 +70,27 @@ contract MyGovernorTest is Test {
         console2.log("Proposal State:", uint256(governor.state(proposalId))); //Pending, 0
         assertEq(uint256(governor.state(proposalId)), 0);
 
-        //2. Move blocks forward to the voting delay
+        //Move blocks forward to the voting delay
         vm.warp(block.timestamp + VOTING_DELAY + 1);
         vm.roll(block.number + VOTING_DELAY + 1);
 
         //checking we are in active state
         console2.log("Proposal State:", uint256(governor.state(proposalId))); //Active 1
         assertEq(uint256(governor.state(proposalId)), 1);
+
+        //2. Vote the proposal
+        string memory reason = "I found a reason to beeeeee";
+        // 0 = Against, 1 = For, 2 = Abstain for this example
+        uint8 voteWay = 1;
+        vm.prank(USER);
+        governor.castVoteWithReason(proposalId, voteWay, reason);
+
+        //Move blocks forward to the voting period
+        vm.warp(block.timestamp + VOTING_PERIOD + 1);
+        vm.roll(block.number + VOTING_PERIOD + 1);
+
+        //checking we are in succeeded state
+        console2.log("Proposal State:", uint256(governor.state(proposalId))); //Succeeded, 4
+        assertEq(uint256(governor.state(proposalId)), 4);
     }
 }
